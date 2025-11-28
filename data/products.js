@@ -1,0 +1,3 @@
+const products = [ { id: 'linen-overshirt-sandstone', slug: 'linen-overshirt-sandstone', title: 'Arkyn Linen Overshirt — Sandstone', description: 'Lightweight linen blend • breathable • limited run', images: ['/images/p1.jpg'], tags: ['Linen', 'Coming Soon'], in_stock: false, mrp: null }, { id: 'classic-tee-ivory', slug: 'classic-tee-ivory', title: 'Arkyn Classic Tee — Ivory', description: 'Soft organic cotton, everyday fit', images: ['/images/p2.jpg'], tags: ['Cotton', 'Coming Soon'], in_stock: false, mrp: null }, { id: 'summer-dress-olive', slug: 'summer-dress-olive', title: 'Arkyn Summer Dress — Olive', description: 'Flowy silhouette, linen blend', images: ['/images/p3.jpg'], tags: ['Dress', 'Coming Soon'], in_stock: false, mrp: null } ];
+
+export default products;
