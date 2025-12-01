@@ -66,12 +66,12 @@ export default function Hero({ onExplore = () => (window.location = "/products")
             </Link>
           </div>
 
-          <div className="mt-8 flex gap-3 items-center">
-            <div className="flex -space-x-3">
-              <img src="/images/p1.jpg" className="w-14 h-14 object-cover rounded-md ring-2 ring-black" alt="sample" />
-              <img src="/images/p2.jpg" className="w-14 h-14 object-cover rounded-md ring-2 ring-black" alt="sample" />
-              <img src="/images/p3.jpg" className="w-14 h-14 object-cover rounded-md ring-2 ring-black" alt="sample" />
-            </div>
+          <div className="mt-8 flex gap-3 items-center relative z-[50]">
+  <div className="flex -space-x-3">
+    <img src="/images/p1.jpg" className="w-14 h-14 object-cover rounded-md ring-2 ring-black" alt="sample" />
+    <img src="/images/p2.jpg" className="w-14 h-14 object-cover rounded-md ring-2 ring-black" alt="sample" />
+    <img src="/images/p3.jpg" className="w-14 h-14 object-cover rounded-md ring-2 ring-black" alt="sample" />
+  </div>
 
             <span className="text-sm text-gray-300/80 ml-3">Join the waitlist for first access</span>
           </div>
