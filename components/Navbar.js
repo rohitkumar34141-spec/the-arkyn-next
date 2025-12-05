@@ -31,7 +31,7 @@ export default function Navbar() {
         <Link href="/" style={{ color: "#fff", textDecoration: "none" }}>Home</Link>
         <Link href="/products" style={{ color: "#fff", textDecoration: "none" }}>Products</Link>
         <Link href="/about" style={{ color: "#fff", textDecoration: "none" }}>About</Link>
-        <Link href="/admin" style={{ color: "#fff", textDecoration: "none" }}>Admin</Link>
+
       </div>
 
     </nav>
