@@ -1,32 +1,31 @@
-import Link from 'next/link'
+// components/ProductCard.js
+import React from "react";
 
 export default function ProductCard({ product }) {
+  // choose the best image available
+  const imageSrc =
+    // support products that have an images array
+    (product?.images && product.images.length > 0 && product.images[0]) ||
+    // support products that use a single image_url field
+    product?.image_url ||
+    // fallback placeholder
+    "/images/p1.jpg";
+
+  const title = product?.name || product?.title || "Product";
+
   return (
-    <div className="card p-3">
-      <Link href={`/products/${product.slug}`} legacyBehavior>
-        <a>
-          <img
-            src={product.images[0]}
-            className="w-full h-44 object-cover rounded-md"
-            alt={product.title}
-          />
-
-          <h3 className="mt-3 text-base font-medium">{product.title}</h3>
-          <p className="text-sm text-gray-500">{product.tags.join(" • ")}</p>
-        </a>
-      </Link>
-
-      <div className="mt-3 flex items-center justify-between">
-        <span className="px-2 py-1 bg-yellow-50 text-yellow-700 text-xs rounded-full">
-          {product.in_stock ? "In stock" : "Coming Soon"}
-        </span>
-
-        <Link href={`/products/${product.slug}`} legacyBehavior>
-          <a className="px-3 py-2 bg-arkyn-500 text-white rounded-md text-sm">
-            View
-          </a>
-        </Link>
+    <a className="block group" href={`/products/${product?.slug || ""}`}>
+      <img
+        src={imageSrc}
+        className="w-full h-44 object-cover rounded-md"
+        alt={title}
+      />
+      <div className="mt-2">
+        <h3 className="font-medium">{title}</h3>
+        {typeof product?.price !== "undefined" && (
+          <p className="text-sm mt-1">₹{(product.price / 100).toFixed(2)}</p>
+        )}
       </div>
-    </div>
-  )
+    </a>
+  );
 }
