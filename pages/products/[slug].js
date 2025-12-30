@@ -1,113 +1,53 @@
 // pages/products/[slug].js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabaseClient";
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
-import OTPModal from "../../components/OTPModal";
+import Head from "next/head";
+import Image from "next/image";
+import clientSupabase from "../../lib/supabaseClient";
 
-export default function ProductDetailPage() {
+export default function ProductPage() {
   const router = useRouter();
   const { slug } = router.query;
+
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [otpOpen, setOtpOpen] = useState(false); // ensure OTPModal has its state
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (!slug) return;
     loadProduct();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.isReady, slug]);
+  }, [slug]);
 
   async function loadProduct() {
-    setLoading(true);
-    setErrorMsg("");
-    setProduct(null);
+    const { data, error } = await clientSupabase
+      .from("products")
+      .select("*")
+      .eq("slug", slug)
+      .single();
 
-    try {
-      if (!slug) {
-        setErrorMsg("Missing product identifier.");
-        setLoading(false);
-        return;
-      }
-
-      const decoded = decodeURIComponent(slug).trim();
-
-      async function tryQuery(builder) {
-        const { data, error } = await builder.maybeSingle();
-        if (error) console.warn("Query error:", error);
-        return data || null;
-      }
-
-      let row = await tryQuery(
-        supabase.from("products").select("*").eq("slug", decoded)
-      );
-
-      if (!row) {
-        row = await tryQuery(
-          supabase.from("products").select("*").ilike("slug", decoded)
-        );
-      }
-
-      if (!row) {
-        const altSpace = decoded.replace(/-/g, " ").replace(/\s+/g, " ").trim();
-        const altDash = decoded.replace(/\s+/g, "-").trim();
-        if (altSpace !== decoded) {
-          row = await tryQuery(
-            supabase.from("products").select("*").ilike("slug", altSpace)
-          );
-        }
-        if (!row && altDash !== decoded) {
-          row = await tryQuery(
-            supabase.from("products").select("*").ilike("slug", altDash)
-          );
-        }
-      }
-
-      if (!row) {
-        row = await tryQuery(
-          supabase.from("products").select("*").ilike("name", `%${decoded}%`)
-        );
-      }
-
-      if (!row) {
-        setErrorMsg("Product not found.");
-      } else {
-        setProduct(row);
-      }
-    } catch (err) {
-      console.error("Unexpected error loading product:", err);
-      setErrorMsg("Failed to load product.");
-    } finally {
+    if (error || !data) {
       setLoading(false);
+      return;
     }
+
+    setProduct(data);
+    setLoading(false);
   }
 
   if (loading) {
     return (
-      <>
-        <Header onSignIn={() => setOtpOpen(true)} />
-        <main className="max-w-[1100px] mx-auto px-4 py-6">Loading...</main>
-        <Footer />
-        <OTPModal open={otpOpen} onClose={() => setOtpOpen(false)} />
-      </>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        Loading…
+      </div>
     );
   }
 
-  if (errorMsg) {
+  if (!product) {
     return (
-      <>
-        <Header onSignIn={() => setOtpOpen(true)} />
-        <main className="max-w-[1100px] mx-auto px-4 py-6">
-          <p className="text-red-500">{errorMsg}</p>
-          <p className="mt-4">
-            Try visiting <a href="/products" className="underline">All Products</a>.
-          </p>
-        </main>
-        <Footer />
-        <OTPModal open={otpOpen} onClose={() => setOtpOpen(false)} />
-      </>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        Product not found
+      </div>
     );
   }
 
@@ -118,32 +58,91 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      <Header onSignIn={() => setOtpOpen(true)} />
-      <main className="max-w-[1100px] mx-auto px-4 py-6">
-        <div className="grid grid-cols-3 gap-8">
-          <div className="col-span-1">
-            <img
-              src={imageSrc}
-              alt={product?.name || product?.title || "Product"}
-              className="w-full object-cover"
-              onError={(e) => (e.currentTarget.src = "/images/p1.jpg")}
+      <Head>
+        <title>{product.name} — The Arkyn</title>
+        <meta
+          name="description"
+          content={product.description || "Premium streetwear by The Arkyn"}
+        />
+      </Head>
+
+      <section className="min-h-screen bg-black text-white px-4 md:px-8 py-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
+          
+          {/* IMAGE */}
+          <div className="relative aspect-[3/4] bg-black overflow-hidden rounded-xl">
+            {/* Badge */}
+            {product.is_featured && (
+              <span className="absolute top-4 left-4 z-10 bg-white/90 text-black text-xs px-3 py-1 rounded tracking-widest font-medium">
+                FEATURED
+              </span>
+            )}
+
+            {!product.is_published && (
+              <span className="absolute top-4 left-4 z-10 bg-black/80 text-white text-xs px-3 py-1 rounded tracking-widest">
+                SOLD OUT
+              </span>
+            )}
+
+            <Image
+              src={product.image_url || "/images/p1.jpg"}
+              alt={product.name}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-contain"
             />
           </div>
 
-          <div className="col-span-2">
-            <h1 className="text-2xl font-semibold mb-2">{product?.name || product?.title}</h1>
-            <p className="text-gray-400 mb-4">Category: {product?.category || "—"}</p>
-            <p className="mb-4">{product?.description}</p>
-            {typeof product?.price !== "undefined" && product?.price !== null ? (
-              <p className="text-xl font-bold">₹{(product.price / 100).toFixed(2)}</p>
-            ) : (
-              <p className="text-xl font-bold">Price not set</p>
+          {/* DETAILS */}
+          <div className="flex flex-col justify-center">
+            <h1 className="text-2xl md:text-4xl font-semibold leading-tight">
+              {product.name}
+            </h1>
+
+            {/* Price */}
+            <div className="mt-4 flex items-center gap-3">
+              <span className="text-xl md:text-2xl font-medium">
+                ₹{product.price ? (product.price / 100).toFixed(0) : "—"}
+              </span>
+
+              {product.mrp && (
+                <span className="text-sm md:text-base text-gray-400 line-through">
+                  ₹{(product.mrp / 100).toFixed(0)}
+                </span>
+              )}
+            </div>
+
+            {/* Description */}
+            {product.description && (
+              <p className="mt-6 text-gray-300 leading-relaxed max-w-lg">
+                {product.description}
+              </p>
             )}
+
+            {/* CTA */}
+            <div className="mt-8">
+              {product.is_published ? (
+                <button className="w-full md:w-auto px-8 py-4 bg-white text-black font-semibold rounded-md hover:bg-white/90 transition">
+                  Add to Cart
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="w-full md:w-auto px-8 py-4 bg-white/20 text-white/60 rounded-md cursor-not-allowed"
+                >
+                  Sold Out
+                </button>
+              )}
+            </div>
+
+            {/* Trust */}
+            <div className="mt-6 text-sm text-gray-400">
+              ✔ Limited release &nbsp;•&nbsp; ✔ Premium fabric &nbsp;•&nbsp; ✔ Easy returns
+            </div>
           </div>
         </div>
-            </main>
-      <Footer />
-      <OTPModal open={otpOpen} onClose={() => setOtpOpen(false)} />
+      </section>
     </>
   );
 }
